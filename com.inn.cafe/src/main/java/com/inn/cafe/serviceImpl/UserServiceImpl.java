@@ -7,6 +7,7 @@ import com.inn.cafe.jwt.JwtUtil;
 import com.inn.cafe.pojo.User;
 import com.inn.cafe.service.UserService;
 import com.inn.cafe.utils.CafeUtils;
+import com.inn.cafe.wrapper.UserWrapper;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Setter
 @Slf4j
@@ -88,19 +87,34 @@ public class UserServiceImpl implements UserService {
         try {
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestMap.get("email"), requestMap.get("password")));
             if (auth.isAuthenticated()) {
-             if(customerUserDetailsService.getUserDetail().getStatus().equalsIgnoreCase("true")){
-                 Map<String,String> response = new HashMap<>();
-                 response.put("token",jwtUtil.generateToken(customerUserDetailsService.getUserDetail().getEmail(),customerUserDetailsService.getUserDetail().getRole()));
-                 response.put("role","admin");
-                 return new ResponseEntity<>(response.toString(), HttpStatus.OK);
-             }
-             else {
-                 return new ResponseEntity<String>("{\"message\":\"" + "wait for admin approval."+"\"}",HttpStatus.BAD_REQUEST);
-             }
+                if (customerUserDetailsService.getUserDetail().getStatus().equalsIgnoreCase("true")) {
+                    Map<String, String> response = new HashMap<>();
+                    response.put("token", jwtUtil.generateToken(customerUserDetailsService.getUserDetail().getEmail(), customerUserDetailsService.getUserDetail().getRole()));
+                    response.put("role", "admin");
+                    return new ResponseEntity<>(response.toString(), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<String>("{\"message\":\"" + "wait for admin approval." + "\"}", HttpStatus.BAD_REQUEST);
+                }
             }
         } catch (Exception ex) {
             log.error("{ }", ex);
         }
-        return new ResponseEntity<String>("{\"message\":\"" + "Bad credentials."+"\"}",HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<String>("{\"message\":\"" + "Bad credentials." + "\"}", HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<List<UserWrapper>> getAllUser() {
+        List<UserWrapper> users = userDao.getAllUser();
+        try {
+            if(users!= null){
+                return new ResponseEntity<>(users,HttpStatus.OK);
+            }
+            else{
+                return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

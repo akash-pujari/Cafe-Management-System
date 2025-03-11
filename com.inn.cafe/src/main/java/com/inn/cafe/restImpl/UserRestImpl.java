@@ -3,11 +3,14 @@ package com.inn.cafe.restImpl;
 import com.inn.cafe.rest.UserRest;
 import com.inn.cafe.service.UserService;
 import com.inn.cafe.utils.CafeUtils;
+import com.inn.cafe.wrapper.UserWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.inn.cafe.constants.CafeConstants.SOMETHING_WENT_WRONG;
@@ -38,7 +41,17 @@ public class UserRestImpl implements UserRest {
 
     @Override
     public ResponseEntity<String> hello() {
-        return new ResponseEntity<>("Hello jwt token is in use!",HttpStatus.OK);
+        return new ResponseEntity<>("Hello jwt token is in use!", HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<UserWrapper>> getAllUser() {
+        try {
+            return userService.getAllUser();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

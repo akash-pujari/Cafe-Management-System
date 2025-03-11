@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless authentication
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/user/login", "/user/forgotPassword/*").permitAll() // Public endpoints
+                                .requestMatchers("/user/login","user/signup", "/user/forgotPassword/*").permitAll() // Public endpoints
                                 .anyRequest().authenticated() // Secure all other endpoints
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Register the JWT filter
