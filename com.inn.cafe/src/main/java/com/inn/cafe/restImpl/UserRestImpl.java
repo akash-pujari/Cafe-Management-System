@@ -36,4 +36,9 @@ public class UserRestImpl implements UserRest {
         }
     }
 
+    @Override
+    public ResponseEntity<String> hello() {
+        return new ResponseEntity<>("Hello jwt token is in use!",HttpStatus.OK);
+    }
+
 }

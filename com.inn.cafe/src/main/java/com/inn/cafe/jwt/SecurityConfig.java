@@ -18,9 +18,12 @@ import org.springframework.web.cors.CorsConfiguration;
 public class SecurityConfig {
 
     private final CustomerUserDetailsService customerUserDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(CustomerUserDetailsService customerUserDetailsService) {
+    // Constructor injection for the services and filter
+    public SecurityConfig(CustomerUserDetailsService customerUserDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.customerUserDetailsService = customerUserDetailsService;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -35,28 +38,26 @@ public class SecurityConfig {
         return authenticationManagerBuilder.build();
     }
 
-    // Password Encoder - You should ideally replace NoOpPasswordEncoder with a stronger encoder in production
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        return NoOpPasswordEncoder.getInstance(); // Use a stronger encoder in production
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())) // CORS configuration
-                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())) // CORS config
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless authentication
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/user/login", "/user/signup", "/user/forgotPassword/*").permitAll() // Public endpoints
-                                .anyRequest().authenticated()
+                                .requestMatchers("/user/login", "/user/forgotPassword/*").permitAll() // Public endpoints
+                                .anyRequest().authenticated() // Secure all other endpoints
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) // Add custom JWT filter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Register the JWT filter
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless session for JWT
                 );
 
         return http.build();
     }
-
 }
