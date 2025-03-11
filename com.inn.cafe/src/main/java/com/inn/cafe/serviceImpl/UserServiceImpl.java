@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -88,7 +89,10 @@ public class UserServiceImpl implements UserService {
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestMap.get("email"), requestMap.get("password")));
             if (auth.isAuthenticated()) {
              if(customerUserDetailsService.getUserDetail().getStatus().equalsIgnoreCase("true")){
-                 return new ResponseEntity<>("{\"token\":\""+jwtUtil.generateToken(customerUserDetailsService.getUserDetail().getEmail()+"\"}",customerUserDetailsService.getUserDetail().getRole()),HttpStatus.OK);
+                 Map<String,String> response = new HashMap<>();
+                 response.put("token",jwtUtil.generateToken(customerUserDetailsService.getUserDetail().getEmail(),customerUserDetailsService.getUserDetail().getRole()));
+                 response.put("role","admin");
+                 return new ResponseEntity<>(response.toString(), HttpStatus.OK);
              }
              else {
                  return new ResponseEntity<String>("{\"message\":\"" + "wait for admin approval."+"\"}",HttpStatus.BAD_REQUEST);

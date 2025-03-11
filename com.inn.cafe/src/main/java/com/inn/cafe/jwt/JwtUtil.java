@@ -7,7 +7,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,7 @@ import java.util.function.Function;
 @Service
 public class JwtUtil {
 
-    private final String secretKey = "secretette";
+    private byte[] secretKey = new byte[]{1, 2, 3, 4, 5};
 
     public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
@@ -30,7 +29,7 @@ public class JwtUtil {
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes(StandardCharsets.UTF_8))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 

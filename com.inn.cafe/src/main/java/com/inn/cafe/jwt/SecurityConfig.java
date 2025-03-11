@@ -23,7 +23,6 @@ public class SecurityConfig {
         this.customerUserDetailsService = customerUserDetailsService;
     }
 
-    // Define the AuthenticationManager as a bean
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder =
@@ -59,6 +58,5 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 
 }

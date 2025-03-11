@@ -48,18 +48,18 @@ class UserServiceImplTest {
     void testSignUp_userAlreadyExists() {
         when(userDao.findByEmailId("akash@gamil.com")).thenReturn(user);
         ResponseEntity<String> result = userServiceImpl.signUp(requestBody);
-        assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 
     @Test
     void testSignUp_forNewUser() {
         ResponseEntity<String> result = userServiceImpl.signUp(requestBody);
-        assertEquals(HttpStatus.OK,result.getStatusCode());
+        assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
     @Test
     void testSignUp_withInvalidRequestBody() {
         ResponseEntity<String> result = userServiceImpl.signUp(new HashMap<>());
-        assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 }
