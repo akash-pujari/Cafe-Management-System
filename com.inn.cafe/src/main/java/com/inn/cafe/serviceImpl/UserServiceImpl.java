@@ -21,10 +21,10 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Setter
-@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
     UserDao userDao;
 

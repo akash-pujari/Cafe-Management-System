@@ -1,8 +1,6 @@
 package com.inn.cafe.jwt;
 
 import com.inn.cafe.dao.UserDao;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,11 +12,16 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 @Service
-@Slf4j
 public class CustomerUserDetailsService implements UserDetailsService {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CustomerUserDetailsService.class);
+
     @Autowired
     UserDao userDao;
-    @Getter
+
+    public com.inn.cafe.pojo.User getUserDetail() {
+        return userDetail;
+    }
+
     private com.inn.cafe.pojo.User userDetail;
 
     @Override
