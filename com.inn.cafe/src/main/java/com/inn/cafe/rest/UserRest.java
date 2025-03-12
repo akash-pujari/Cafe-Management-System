@@ -1,6 +1,7 @@
 package com.inn.cafe.rest;
 
 import com.inn.cafe.wrapper.UserWrapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,5 +24,8 @@ public interface UserRest {
     ResponseEntity<String> hello();
 
     @GetMapping(path = "/get")
-    ResponseEntity<List<UserWrapper>> getAllUser();
+    ResponseEntity<List<UserWrapper>> getAllUser(HttpServletRequest httpServletRequest);
+
+    @PostMapping(path="updateUserStatus")
+    ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest,@RequestBody(required = true)Map<String,String> requestBody);
 }

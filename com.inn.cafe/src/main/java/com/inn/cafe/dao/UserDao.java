@@ -18,8 +18,16 @@ public interface UserDao extends JpaRepository<User, Integer> {
     @Modifying
     void updateUserPassword(@Param("password") String password, @Param("email") String email);
 
-    @Query("SELECT new com.inn.cafe.wrapper.UserWrapper(u.id, u.name, u.email, u.contactNumber, u.role) FROM User u WHERE u.role = 'user'")
+    @Query("SELECT new com.inn.cafe.wrapper.UserWrapper(u.id, u.name, u.email, u.contactNumber, u.role,u.status) FROM User u WHERE u.role = 'user'")
     @Transactional
     @Modifying
     List<UserWrapper> getAllUser();
+
+    @Query("UPDATE User u SET u.status = :status WHERE u.id = :id")
+    @Transactional
+    @Modifying
+    void updateUserStatus(Integer id, String status);
+
+    @Query("SELECT u.email FROM User u WHERE u.role = 'admin'")
+    List<String> getAllAdmins();
 }

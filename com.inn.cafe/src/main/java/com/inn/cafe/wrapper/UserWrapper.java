@@ -47,16 +47,27 @@ public class UserWrapper {
     String contactNumber;
     String role;
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    String status;
+
     public UserWrapper() {
 
     }
 
-    public UserWrapper(Integer id, String name, String email, String contactNumber, String role) {
+    public UserWrapper(Integer id, String name, String email, String contactNumber, String role,String status) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.contactNumber = contactNumber;
         this.role = role;
+        this.status=status;
     }
 
 }

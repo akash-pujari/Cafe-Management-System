@@ -8,8 +8,9 @@ import com.inn.cafe.pojo.User;
 import com.inn.cafe.service.UserService;
 import com.inn.cafe.utils.CafeUtils;
 import com.inn.cafe.wrapper.UserWrapper;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static com.inn.cafe.constants.CafeConstants.*;
 
 @Setter
 @Service
@@ -103,18 +106,62 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<List<UserWrapper>> getAllUser() {
-        List<UserWrapper> users = userDao.getAllUser();
+    public ResponseEntity<List<UserWrapper>> getAllUser(HttpServletRequest httpServletRequest) {
         try {
-            if(users!= null){
-                return new ResponseEntity<>(users,HttpStatus.OK);
+            String role = getRoleFromHttpRequestToken(httpServletRequest);
+            if (!"admin".equalsIgnoreCase(role)) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
-            else{
-                return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+
+            List<UserWrapper> users = userDao.getAllUser();
+            if (users != null) {
+                return new ResponseEntity<>(users, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest, Map<String, String> requestBody) {
+        try {
+            String role = getRoleFromHttpRequestToken(httpServletRequest);
+            if ("admin".equalsIgnoreCase(role)) {
+                Optional<User> user = userDao.findById(Integer.parseInt(requestBody.get("id")));
+                if (user.isPresent()) {
+                    userDao.updateUserStatus(Integer.parseInt(requestBody.get("id")), requestBody.get("status"));
+                    //TODO:need to add condtion whether user status actully changed or not
+                    sendMailToAllAdmins(requestBody.get("status"),user.get().getEmail(),userDao.getAllAdmins());
+                    return CafeUtils.getResponse(USER_STATUS_CHANGED_SUCCESSFULLY, HttpStatus.OK);
+                } else {
+                    return CafeUtils.getResponse(USER_DOESNT_EXISTS, HttpStatus.NOT_FOUND);
+                }
+
+            } else {
+                return CafeUtils.getResponse(ONLY_ADMIN_CAN_CHANGE_STATUS_OF_USER, HttpStatus.UNAUTHORIZED);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private void sendMailToAllAdmins(String status, String email, List<String> allAdmins) {
+
+    }
+
+    String getRoleFromHttpRequestToken(HttpServletRequest httpServletRequest) throws Exception {
+        String authorizationHeader = httpServletRequest.getHeader("Authorization");
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new Exception();
+        }
+
+        String token = authorizationHeader.substring(7);
+        Claims claims = jwtUtil.extractAllClaims(token);
+        String role = (String) claims.get("role");
+        return role;
     }
 }
