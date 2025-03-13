@@ -1,6 +1,7 @@
 package com.inn.cafe.service;
 
 import com.inn.cafe.wrapper.UserWrapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -18,5 +19,5 @@ public interface UserService {
     ResponseEntity<String> changePassword(Map<String,String> requestBody);
     ResponseEntity<List<UserWrapper>> getAllUser(HttpServletRequest httpServletRequest);
 
-    ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest,Map<String,String> requestBody);
+    ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest, Map<String,String> requestBody);
 }
