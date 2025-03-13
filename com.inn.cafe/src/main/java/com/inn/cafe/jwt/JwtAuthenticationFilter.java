@@ -19,8 +19,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomerUserDetailsService customerUserDetailsService;
+    private String role;
+    String userName = null;
 
-    // Constructor injection for dependencies
     public JwtAuthenticationFilter(JwtUtil jwtUtil, CustomerUserDetailsService customerUserDetailsService) {
         this.jwtUtil = jwtUtil;
         this.customerUserDetailsService = customerUserDetailsService;
@@ -33,13 +34,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else {
             String authorizationHeader = request.getHeader("Authorization");
             String token = null;
-            String userName = null;
             Claims claims = null;
 
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 token = authorizationHeader.substring(7);
                 userName = jwtUtil.extractUserName(token);
                 claims = jwtUtil.extractAllClaims(token);
+                role = jwtUtil.extractRole(token);
             }
 
             if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -55,11 +56,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    public boolean isAdmin(Claims claims) {
-        return "admin".equalsIgnoreCase((String) claims.get("role"));
+    public boolean isAdmin() {
+        return "admin".equalsIgnoreCase(role);
     }
 
-    public boolean isUser(Claims claims) {
-        return "user".equalsIgnoreCase((String) claims.get("role"));
+    public boolean isUser() {
+        return "user".equalsIgnoreCase(role);
+    }
+
+    public String getCurrentUser(){
+        return userName;
     }
 }

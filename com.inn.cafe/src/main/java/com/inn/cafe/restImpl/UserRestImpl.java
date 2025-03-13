@@ -40,8 +40,13 @@ public class UserRestImpl implements UserRest {
     }
 
     @Override
-    public ResponseEntity<String> hello() {
-        return new ResponseEntity<>("Hello jwt token is in use!", HttpStatus.OK);
+    public ResponseEntity<String> checkToken() {
+        try {
+            return userService.checkToken();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -52,6 +57,17 @@ public class UserRestImpl implements UserRest {
             e.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> changePassword(Map<String, String> requestBody) {
+        try {
+            return userService.changePassword(requestBody);
+
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

@@ -3,13 +3,13 @@ package com.inn.cafe.serviceImpl;
 import com.inn.cafe.constants.CafeConstants;
 import com.inn.cafe.dao.UserDao;
 import com.inn.cafe.jwt.CustomerUserDetailsService;
+import com.inn.cafe.jwt.JwtAuthenticationFilter;
 import com.inn.cafe.jwt.JwtUtil;
 import com.inn.cafe.pojo.User;
 import com.inn.cafe.service.UserService;
 import com.inn.cafe.utils.CafeUtils;
 import com.inn.cafe.wrapper.UserWrapper;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static com.inn.cafe.constants.CafeConstants.PASSWORD_UPDATED_SUCCESSFULLY;
+import static com.inn.cafe.constants.CafeConstants.SOMETHING_WENT_WRONG;
 
 @Setter
 @Service
@@ -36,6 +39,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     JwtUtil jwtUtil;
+
+    @Autowired
+    JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Override
     public ResponseEntity<String> signUp(Map<String, String> requestBody) {
@@ -106,15 +112,50 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<List<UserWrapper>> getAllUser() {
         List<UserWrapper> users = userDao.getAllUser();
         try {
-            if(users!= null){
-                return new ResponseEntity<>(users,HttpStatus.OK);
-            }
-            else{
-                return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+            if (users != null) {
+                if (jwtAuthenticationFilter.isAdmin()) {
+                    return new ResponseEntity<>(users, HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(new ArrayList<>(), HttpStatus.UNAUTHORIZED);
+                }
+            } else {
+                return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> checkToken() {
+        try {
+            return CafeUtils.getResponse("Token is valid!", HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> changePassword(Map<String, String> requestBody) {
+        try {
+            User user = userDao.findByEmail(jwtAuthenticationFilter.getCurrentUser());
+            if (user != null) {
+                if (user.getPassword().equals(requestBody.get("oldPassword"))) {
+                    user.setPassword(requestBody.get("newPassword"));
+                    userDao.save(user);
+                    return new ResponseEntity<>(PASSWORD_UPDATED_SUCCESSFULLY, HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>("Incorrect old password!", HttpStatus.BAD_REQUEST);
+                }
+            }
+
+            return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

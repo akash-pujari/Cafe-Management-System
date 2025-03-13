@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -36,6 +35,10 @@ public class JwtUtil {
 
     public String extractUserName(String token) {
         return extractClaims(token, Claims::getSubject);
+    }
+
+    public String extractRole(String token) {
+        return extractClaims(token, claims -> (String) claims.get("role"));
     }
 
     public <T> T extractClaims(String token, Function<Claims, T> claimsResolver) {

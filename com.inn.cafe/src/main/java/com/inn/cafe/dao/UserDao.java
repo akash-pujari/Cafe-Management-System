@@ -22,4 +22,6 @@ public interface UserDao extends JpaRepository<User, Integer> {
     @Transactional
     @Modifying
     List<UserWrapper> getAllUser();
+
+    User findByEmail(String email);
 }
