@@ -24,4 +24,8 @@ public interface UserRest {
 
     @PostMapping(path ="changePassword")
     ResponseEntity<String> changePassword(@RequestBody(required = true) Map<String,String> requestBody);
+    ResponseEntity<List<UserWrapper>> getAllUser(HttpServletRequest httpServletRequest);
+
+    @PostMapping(path="updateUserStatus")
+    ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest,@RequestBody(required = true)Map<String,String> requestBody);
 }

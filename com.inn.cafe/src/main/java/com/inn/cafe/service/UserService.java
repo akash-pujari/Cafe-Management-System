@@ -16,4 +16,7 @@ public interface UserService {
     ResponseEntity<String> checkToken();
 
     ResponseEntity<String> changePassword(Map<String,String> requestBody);
+    ResponseEntity<List<UserWrapper>> getAllUser(HttpServletRequest httpServletRequest);
+
+    ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest,Map<String,String> requestBody);
 }

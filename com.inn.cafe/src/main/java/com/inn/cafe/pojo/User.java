@@ -1,10 +1,8 @@
 package com.inn.cafe.pojo;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -36,7 +34,7 @@ public class User implements Serializable {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "status")
+    @Column(nullable = false, name = "status")
     private String status;
 
     @Column(name = "role")

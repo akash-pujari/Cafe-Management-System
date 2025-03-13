@@ -4,6 +4,7 @@ import com.inn.cafe.rest.UserRest;
 import com.inn.cafe.service.UserService;
 import com.inn.cafe.utils.CafeUtils;
 import com.inn.cafe.wrapper.UserWrapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,9 +51,9 @@ public class UserRestImpl implements UserRest {
     }
 
     @Override
-    public ResponseEntity<List<UserWrapper>> getAllUser() {
+    public ResponseEntity<List<UserWrapper>> getAllUser(HttpServletRequest httpServletRequest) {
         try {
-            return userService.getAllUser();
+            return userService.getAllUser(httpServletRequest);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -66,6 +67,16 @@ public class UserRestImpl implements UserRest {
 
         } catch (Exception e) {
           e.printStackTrace();
+        }
+        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest,Map<String, String> requestBody) {
+        try {
+            return userService.updateUserStatus(httpServletRequest,requestBody);
+        }catch (Exception e){
+            e.printStackTrace();
         }
         return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
