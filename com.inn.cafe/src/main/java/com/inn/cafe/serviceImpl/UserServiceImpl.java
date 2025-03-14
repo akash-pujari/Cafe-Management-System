@@ -8,6 +8,7 @@ import com.inn.cafe.jwt.JwtUtil;
 import com.inn.cafe.pojo.User;
 import com.inn.cafe.service.UserService;
 import com.inn.cafe.utils.CafeUtils;
+import com.inn.cafe.utils.EmailUtils;
 import com.inn.cafe.wrapper.UserWrapper;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +47,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    JwtAuthenticationFilter jwtFilter;
+
+    @Autowired
+    EmailUtils emailUtils;
 
     @Override
     public ResponseEntity<String> signUp(Map<String, String> requestBody) {
@@ -97,34 +104,41 @@ public class UserServiceImpl implements UserService {
         try {
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestMap.get("email"), requestMap.get("password")));
             if (auth.isAuthenticated()) {
+                log.info("user authenticated Successfully");
                 if (customerUserDetailsService.getUserDetail().getStatus().equalsIgnoreCase("true")) {
                     Map<String, String> response = new HashMap<>();
                     response.put("token", jwtUtil.generateToken(customerUserDetailsService.getUserDetail().getEmail(), customerUserDetailsService.getUserDetail().getRole()));
                     response.put("role", "admin");
                     return new ResponseEntity<>(response.toString(), HttpStatus.OK);
                 } else {
+                    log.info("User yet to be approved by admin");
                     return new ResponseEntity<String>("{\"message\":\"" + "wait for admin approval." + "\"}", HttpStatus.BAD_REQUEST);
                 }
             }
         } catch (Exception ex) {
             log.error("{ }", ex);
         }
-        return new ResponseEntity<String>("{\"message\":\"" + "Bad credentials." + "\"}", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("{\"message\":\"" + "Bad credentials." + "\"}", HttpStatus.BAD_REQUEST);
     }
 
-    @Override
-    public ResponseEntity<List<UserWrapper>> getAllUser(HttpServletRequest httpServletRequest) {
-        try {
-            String role = getRoleFromHttpRequestToken(httpServletRequest);
-            if (!"admin".equalsIgnoreCase(role)) {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
 
-            List<UserWrapper> users = userDao.getAllUser();
-            if (users != null) {
-                return new ResponseEntity<>(users, HttpStatus.OK);
+    @Override
+    public ResponseEntity<List<UserWrapper>> getAllUser() {
+        try {
+            if (jwtAuthenticationFilter.isAdmin()) {
+                log.info(CURRENT_TOKEN_BEAR_BY_ADMIN);
+                List<UserWrapper> users = userDao.getAllUser();
+                if (users != null) {
+                    log.info("Returning users");
+                    return new ResponseEntity<>(users, HttpStatus.OK);
+                } else {
+                    log.info("No such users present in DB");
+                    return new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND);
+                }
+
             } else {
-                return new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND);
+                log.info("Current token is not bear by admin");
+                return new ResponseEntity<>(new ArrayList<>(), HttpStatus.FORBIDDEN);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,11 +151,12 @@ public class UserServiceImpl implements UserService {
         try {
             String role = getRoleFromHttpRequestToken(httpServletRequest);
             if ("admin".equalsIgnoreCase(role)) {
+                log.info(CURRENT_TOKEN_BEAR_BY_ADMIN);
                 Optional<User> user = userDao.findById(Integer.parseInt(requestBody.get("id")));
                 if (user.isPresent()) {
                     userDao.updateUserStatus(Integer.parseInt(requestBody.get("id")), requestBody.get("status"));
                     //TODO:need to add condtion whether user status actully changed or not
-                    sendMailToAllAdmins(requestBody.get("status"),user.get().getEmail(),userDao.getAllAdmins());
+                    sendMailToAllAdmins(requestBody.get("status"), user.get().getEmail(), userDao.getAllAdmins());
                     return CafeUtils.getResponse(USER_STATUS_CHANGED_SUCCESSFULLY, HttpStatus.OK);
                 } else {
                     return CafeUtils.getResponse(USER_DOESNT_EXISTS, HttpStatus.NOT_FOUND);
@@ -156,8 +171,15 @@ public class UserServiceImpl implements UserService {
         return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private void sendMailToAllAdmins(String status, String email, List<String> allAdmins) {
-
+    private void sendMailToAllAdmins(String status, String user, List<String> allAdmins) {
+        // TODO:Remove senders email id
+        allAdmins.remove(jwtAuthenticationFilter.getCurrentUser());
+        if (status != null && status.equalsIgnoreCase("true")) {
+            emailUtils.sendSimpleMessage(jwtAuthenticationFilter.getCurrentUser(),"Account Approved","USER:- "+user+" \n  is approved by \nADMIN:-"+ jwtAuthenticationFilter.getCurrentUser()+")",allAdmins);
+        }
+        else{
+            emailUtils.sendSimpleMessage(jwtAuthenticationFilter.getCurrentUser(),"Account Disabled","USER:- "+user+" \n  is disabled by \nADMIN:-"+ jwtAuthenticationFilter.getCurrentUser()+")",allAdmins);
+        }
     }
 
     String getRoleFromHttpRequestToken(HttpServletRequest httpServletRequest) throws Exception {
@@ -189,10 +211,12 @@ public class UserServiceImpl implements UserService {
             User user = userDao.findByEmail(jwtAuthenticationFilter.getCurrentUser());
             if (user != null) {
                 if (user.getPassword().equals(requestBody.get("oldPassword"))) {
+                    log.info("Password is matching");
                     user.setPassword(requestBody.get("newPassword"));
                     userDao.save(user);
                     return new ResponseEntity<>(PASSWORD_UPDATED_SUCCESSFULLY, HttpStatus.OK);
                 } else {
+                    log.info("Password is not matching");
                     return new ResponseEntity<>("Incorrect old password!", HttpStatus.BAD_REQUEST);
                 }
             }

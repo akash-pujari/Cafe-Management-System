@@ -12,12 +12,10 @@ public interface UserService {
 
     ResponseEntity<String> login(Map<String, String> requestMap);
 
-    ResponseEntity<List<UserWrapper>> getAllUser();
-
     ResponseEntity<String> checkToken();
 
     ResponseEntity<String> changePassword(Map<String,String> requestBody);
-    ResponseEntity<List<UserWrapper>> getAllUser(HttpServletRequest httpServletRequest);
+    ResponseEntity<List<UserWrapper>> getAllUser();
 
     ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest, Map<String,String> requestBody);
 }
