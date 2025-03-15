@@ -66,16 +66,26 @@ public class UserRestImpl implements UserRest {
             return userService.changePassword(requestBody);
 
         } catch (Exception e) {
-          e.printStackTrace();
+            e.printStackTrace();
         }
         return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest,Map<String, String> requestBody) {
+    public ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest, Map<String, String> requestBody) {
         try {
-            return userService.updateUserStatus(httpServletRequest,requestBody);
-        }catch (Exception e){
+            return userService.updateUserStatus(httpServletRequest, requestBody);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> forgotPassword(Map<String, String> requestBody) {
+        try {
+            return userService.forgotPassword(requestBody);
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);

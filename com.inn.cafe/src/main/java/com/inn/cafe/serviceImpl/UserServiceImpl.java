@@ -23,9 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static com.inn.cafe.constants.CafeConstants.PASSWORD_UPDATED_SUCCESSFULLY;
-import static com.inn.cafe.constants.CafeConstants.SOMETHING_WENT_WRONG;
-
 import static com.inn.cafe.constants.CafeConstants.*;
 
 @Setter
@@ -168,17 +165,33 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+        return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> forgotPassword(Map<String, String> requestBody) {
+        try {
+            User user = userDao.findByEmail(requestBody.get("email"));
+            if (!Objects.isNull(user) && user.getEmail() != null && !user.getEmail().isEmpty()) {
+                emailUtils.forgotMail(user.getEmail(), "Credentials by Cafe Management System", user.getPassword());
+                return CafeUtils.getResponse("Check your mail for credentials", HttpStatus.OK);
+            } else {
+                return CafeUtils.getResponse("Cant find any user related to mail " + user.getEmail(), HttpStatus.BAD_REQUEST);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private void sendMailToAllAdmins(String status, String user, List<String> allAdmins) {
         // TODO:Remove senders email id
         allAdmins.remove(jwtAuthenticationFilter.getCurrentUser());
         if (status != null && status.equalsIgnoreCase("true")) {
-            emailUtils.sendSimpleMessage(jwtAuthenticationFilter.getCurrentUser(),"Account Approved","USER:- "+user+" \n  is approved by \nADMIN:-"+ jwtAuthenticationFilter.getCurrentUser()+")",allAdmins);
-        }
-        else{
-            emailUtils.sendSimpleMessage(jwtAuthenticationFilter.getCurrentUser(),"Account Disabled","USER:- "+user+" \n  is disabled by \nADMIN:-"+ jwtAuthenticationFilter.getCurrentUser()+")",allAdmins);
+            emailUtils.sendSimpleMessage(jwtAuthenticationFilter.getCurrentUser(), "Account Approved", "USER:- " + user + " \n  is approved by \nADMIN:-" + jwtAuthenticationFilter.getCurrentUser() + ")", allAdmins);
+        } else {
+            emailUtils.sendSimpleMessage(jwtAuthenticationFilter.getCurrentUser(), "Account Disabled", "USER:- " + user + " \n  is disabled by \nADMIN:-" + jwtAuthenticationFilter.getCurrentUser() + ")", allAdmins);
         }
     }
 
@@ -190,19 +203,19 @@ public class UserServiceImpl implements UserService {
 
         String token = authorizationHeader.substring(7);
         Claims claims = jwtUtil.extractAllClaims(token);
-        String role = (String) claims.get("role");
-        return role;
+        return (String) claims.get("role");
     }
 
     @Override
     public ResponseEntity<String> checkToken() {
         try {
+
             return CafeUtils.getResponse("Token is valid!", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+        return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -210,21 +223,26 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userDao.findByEmail(jwtAuthenticationFilter.getCurrentUser());
             if (user != null) {
-                if (user.getPassword().equals(requestBody.get("oldPassword"))) {
-                    log.info("Password is matching");
-                    user.setPassword(requestBody.get("newPassword"));
-                    userDao.save(user);
-                    return new ResponseEntity<>(PASSWORD_UPDATED_SUCCESSFULLY, HttpStatus.OK);
-                } else {
-                    log.info("Password is not matching");
-                    return new ResponseEntity<>("Incorrect old password!", HttpStatus.BAD_REQUEST);
+                if(!requestBody.get("newPassword").equals(requestBody.get("oldPassword"))) {
+                    if (user.getPassword().equals(requestBody.get("oldPassword"))) {
+                        log.info("Password is matching");
+                        user.setPassword(requestBody.get("newPassword"));
+                        userDao.save(user);
+                        return CafeUtils.getResponse(PASSWORD_UPDATED_SUCCESSFULLY, HttpStatus.OK);
+                    } else {
+                        log.info("Password is not matching");
+                        return new ResponseEntity<>("Incorrect old password!", HttpStatus.BAD_REQUEST);
+                    }
+                }
+                else{
+                    return CafeUtils.getResponse(OLD_AND_NEW_PASSWORDS_SEEMS_SIMILAR_PLEASE_TRY_WITH_DIFFERENT_PASSWORD, HttpStatus.BAD_REQUEST);
                 }
             }
 
-            return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+            return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseEntity<>(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+        return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

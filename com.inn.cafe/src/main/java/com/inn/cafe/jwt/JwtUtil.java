@@ -15,7 +15,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private byte[] secretKey = new byte[]{1, 2, 3, 4, 5};
+    private final String secretKey="Very secrete";
 
     public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
@@ -28,7 +28,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60*10))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }

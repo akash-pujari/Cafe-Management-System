@@ -28,4 +28,7 @@ public interface UserRest {
 
     @PostMapping(path="updateUserStatus")
     ResponseEntity<String> updateUserStatus(HttpServletRequest httpServletRequest,@RequestBody(required = true)Map<String,String> requestBody);
+
+    @PostMapping(path="forgotPassword")
+    ResponseEntity<String> forgotPassword(@RequestBody(required = true)Map<String,String> requestBody);
 }
