@@ -92,6 +92,27 @@ public class ProductServiceImpl implements ProductService {
         return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @Override
+    public ResponseEntity<String> removeProduct(Integer id) {
+        try {
+            if (filter.isAdmin()) {
+                Product product = productDao.getProductById(id);
+                if (product != null) {
+                    productDao.removeProduct(id);
+                    return CafeUtils.getResponse("Product deleted successfully!", HttpStatus.OK);
+                } else {
+                    return CafeUtils.getResponse("Product not exists", HttpStatus.BAD_REQUEST);
+                }
+
+            } else {
+                return CafeUtils.getResponse("Only Admin can delete product", HttpStatus.FORBIDDEN);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private static void updateProduct(Map<String, String> requestBody, Product product) {
         if (requestBody.containsKey("name")) {
             product.setName(requestBody.get("name"));

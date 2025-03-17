@@ -13,9 +13,12 @@ public interface ProductRest {
     @PostMapping("/add")
     ResponseEntity<String> addNewProduct(@RequestBody(required = true) Map<String, String> requestBody);
 
-    @GetMapping("getAllProduct")
+    @GetMapping("/getAllProduct")
     ResponseEntity<List<ProductWrapper>> getAllProduct();
 
-    @PutMapping("updateProduct")
+    @PutMapping("/updateProduct")
     ResponseEntity<String> updateProduct(@RequestBody(required = true) Map<String, String> requestBody);
+
+    @DeleteMapping("/removeProduct/{id}")
+    ResponseEntity<String> removeProduct(@PathVariable(required = true) Integer id);
 }

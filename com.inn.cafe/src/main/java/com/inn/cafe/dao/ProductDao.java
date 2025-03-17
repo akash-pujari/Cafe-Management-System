@@ -2,8 +2,11 @@ package com.inn.cafe.dao;
 
 import com.inn.cafe.pojo.Product;
 import com.inn.cafe.wrapper.ProductWrapper;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+
 import java.util.List;
 
 public interface ProductDao extends JpaRepository<Product, Integer> {
@@ -12,4 +15,9 @@ public interface ProductDao extends JpaRepository<Product, Integer> {
 
     @Query("SELECT p FROM Product p  WHERE p.id=:id")
     Product getProductById(Integer id);
+
+    @Query("DELETE FROM Product p WHERE p.id=:id")
+    @Transactional
+    @Modifying
+    void removeProduct(Integer id);
 }
