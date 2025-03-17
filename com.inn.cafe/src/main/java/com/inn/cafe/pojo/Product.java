@@ -32,6 +32,17 @@ public class Product implements Serializable {
     @Column(name = "description")
     private String description;
 
+    public String getCategory_name() {
+        return category_name;
+    }
+
+    public void setCategory_name(String category_name) {
+        this.category_name = category_name;
+    }
+
+    @Column(name = "category_name")
+    private String category_name;
+
     public String getStatus() {
         return status;
     }

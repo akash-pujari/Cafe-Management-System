@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ProductDao extends JpaRepository<Product, Integer> {
-    @Query("SELECT new com.inn.cafe.wrapper.ProductWrapper(p.id, p.name, p.status, p.category.id, p.description, p.price) FROM Product p JOIN p.category c")
+    @Query("SELECT new com.inn.cafe.wrapper.ProductWrapper(p.id, p.name, p.status, p.category.id, p.description, p.price, p.category_name) FROM Product p JOIN p.category c")
     List<ProductWrapper> getAllProduct();
+
+    @Query("SELECT p FROM Product p  WHERE p.id=:id")
+    Product getProductById(Integer id);
 }

@@ -1,5 +1,6 @@
 package com.inn.cafe.serviceImpl;
 
+import com.inn.cafe.dao.CategoryDao;
 import com.inn.cafe.dao.ProductDao;
 import com.inn.cafe.jwt.JwtAuthenticationFilter;
 import com.inn.cafe.pojo.Category;
@@ -33,13 +34,17 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     ProductDao productDao;
 
+    @Autowired
+    CategoryDao categoryDao;
+
     @Override
     public ResponseEntity<String> addNewProduct(Map<String, String> requestBody) {
         try {
             if (filter.isAdmin()) {
                 log.info("Into add product");
                 if (validateProductMap(requestBody, false)) {
-                    productDao.save(getProductFromMap(requestBody, false));
+                    Category c = categoryDao.getCategoryById(Integer.parseInt(requestBody.get("id")));
+                    productDao.save(getProductFromMap(requestBody, c, false));
                     return CafeUtils.getResponse("Product added successfully!", HttpStatus.OK);
 
                 } else {
@@ -67,12 +72,45 @@ public class ProductServiceImpl implements ProductService {
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private Product getProductFromMap(Map<String, String> requestBody, boolean isAdd) {
-        Category category = new Category();
-        Product product = new Product();
-        category.setId(Integer.parseInt(requestBody.get("id")));
-        product.setCategory(category);
+    @Override
+    public ResponseEntity<String> updateProduct(Map<String, String> requestBody) {
+        try {
+            Product product = productDao.getProductById(Integer.parseInt(requestBody.get("id")));
+            if (filter.isAdmin()) {
+                log.info("Into update product");
+                updateProduct(requestBody, product);
+                productDao.save(product);
+                return CafeUtils.getResponse("Product updated successfully", HttpStatus.NO_CONTENT);
+            } else {
+                return CafeUtils.getResponse("Only admin can update product", HttpStatus.FORBIDDEN);
+            }
 
+        } catch (
+                Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private static void updateProduct(Map<String, String> requestBody, Product product) {
+        if (requestBody.containsKey("name")) {
+            product.setName(requestBody.get("name"));
+        }
+        if (requestBody.containsKey("description")) {
+            product.setDescription(requestBody.get("description"));
+        }
+        if (requestBody.containsKey("price")) {
+            product.setPrice(Double.parseDouble(requestBody.get("price")));
+        }
+        if (requestBody.containsKey("status")) {
+            product.setStatus(requestBody.get("status"));
+        }
+    }
+
+    private Product getProductFromMap(Map<String, String> requestBody, Category c, boolean isAdd) {
+        Product product = new Product();
+        product.setCategory(c);
+        product.setCategory_name(c.getName() != null ? c.getName() : "UNKNOWN");
         if (isAdd) {
             product.setId(Integer.parseInt(requestBody.get("id")));
         } else {

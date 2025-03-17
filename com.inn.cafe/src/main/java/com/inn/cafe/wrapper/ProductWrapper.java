@@ -8,14 +8,25 @@ public class ProductWrapper {
     private Integer category_fk;
     private String description;
     private double price;
+    private String category_name;
 
-    public ProductWrapper(Integer id, String name, String status, Integer category_fk, String description, double price) {
+    public ProductWrapper(Integer id, String name, String status, Integer category_fk, String description, double price, String categoryname) {
         this.id = id;
         this.name = name;
         this.status = status;
         this.category_fk = category_fk;
         this.description = description;
         this.price = price;
+        this.category_name = categoryname;
+    }
+
+
+    public String getCategory_name() {
+        return category_name;
+    }
+
+    public void setCategory_name(String category_name) {
+        this.category_name = category_name;
     }
 
     public Integer getId() {
