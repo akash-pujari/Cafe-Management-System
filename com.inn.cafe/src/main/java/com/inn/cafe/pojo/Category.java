@@ -6,6 +6,7 @@ import org.hibernate.annotations.DynamicUpdate;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @DynamicInsert
 @DynamicUpdate
@@ -15,6 +16,10 @@ public class Category implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,5 +48,8 @@ public class Category implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Product> products;
 
 }
