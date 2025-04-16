@@ -1,5 +1,6 @@
 package com.inn.cafe.service;
 
+import com.inn.cafe.pojo.Product;
 import com.inn.cafe.wrapper.ProductWrapper;
 import org.springframework.http.ResponseEntity;
 
@@ -14,4 +15,8 @@ public interface ProductService {
     ResponseEntity<String> updateProduct(Map<String, String> requestBody);
 
     ResponseEntity<String> removeProduct(Integer id);
+
+    ResponseEntity<List<ProductWrapper>> getProductByCategoryId(Integer id);
+
+    ResponseEntity<ProductWrapper> getProductById(Integer id);
 }

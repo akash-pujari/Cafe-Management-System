@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.inn.cafe.constants.CafeConstants.SOMETHING_WENT_WRONG;
 
@@ -111,6 +112,37 @@ public class ProductServiceImpl implements ProductService {
             e.printStackTrace();
         }
         return CafeUtils.getResponse(SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<ProductWrapper>> getProductByCategoryId(Integer id) {
+        try {
+            List<ProductWrapper> productWrapper = productDao.getProductByCategoryId(id);
+            /*if (!productWrapper.isEmpty()) {*/
+            return new ResponseEntity<>(productWrapper, HttpStatus.OK);
+            /*} else {
+                return new ResponseEntity<>(new ArrayList<>(), HttpStatus.BAD_REQUEST);
+            }*/
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<ProductWrapper> getProductById(Integer id) {
+        try {
+            ProductWrapper product = productDao.getProductByItsId(id);
+            if (product != null) {
+                return new ResponseEntity<>(product, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ProductWrapper(), HttpStatus.BAD_REQUEST);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ProductWrapper(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private static void updateProduct(Map<String, String> requestBody, Product product) {

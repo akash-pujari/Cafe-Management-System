@@ -10,6 +10,9 @@ public class ProductWrapper {
     private double price;
     private String category_name;
 
+    public ProductWrapper(){
+
+    }
     public ProductWrapper(Integer id, String name, String status, Integer category_fk, String description, double price, String categoryname) {
         this.id = id;
         this.name = name;
@@ -75,5 +78,10 @@ public class ProductWrapper {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public ProductWrapper(Integer id, String name) {
+        this.id = id;
+        this.name = name;
     }
 }
